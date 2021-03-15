@@ -1,0 +1,3 @@
+project_id           = "<GCP PROJECT_ID>"
+region               = "<GCP REGION>"
+gcs_s3_compatibility = true

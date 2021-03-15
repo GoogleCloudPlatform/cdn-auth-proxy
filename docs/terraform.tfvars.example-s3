@@ -1,0 +1,8 @@
+project_id                 = "<GCP PROJECT_ID>"
+s3_origin_bucket_name      = "<S3_ORIGIN_BUKCET_NAME>"
+s3_origin_bucket_region    = "<S3_ORIGIN_BUCKET_REGION>"
+
+s3_origin_bucket_secrets = {
+  AWS_ACCESS_KEY_ID     = "<ACCESS_KEY>"
+  AWS_SECRET_ACCESS_KEY = "<ACCESS_SECRET>"
+}
