@@ -14,16 +14,16 @@
 
 variable "project_id" {
   type        = string
-  description = "Project to deploy the S3 Authetication Proxy"
+  description = "Project to deploy the Authentication Proxy"
 }
 
 variable "region" {
   type        = string
-  description = "Region to deploy the S3 Authentication Proxy"
+  description = "Google Cloud region to deploy the Authentication Proxy"
   default     = "us-central1"
 }
 
-variable "gcs_s3_compatibility" {
+variable "gcs_interoperability" {
   type        = bool
   default     = false
   description = <<-EOT
@@ -36,7 +36,7 @@ variable "s3_origin_bucket_region" {
   type        = string
   default     = "auto"
   description = <<-EOT
-  AWS S3 region of the origin bucket. If gcs_s3_compatibility is true, a GCS bucket
+  AWS S3 region of the origin bucket. If gcs_interoperability is true, a GCS bucket
   will be created in var.region.
   EOT
 }
@@ -44,7 +44,7 @@ variable "s3_origin_bucket_name" {
   type        = string
   default     = ""
   description = <<-EOT
-  AWS S3 origin bucket name. If gcs_s3_compatibility is true, this value will be
+  AWS S3 origin bucket name. If gcs_interoperability is true, this value will be
   ignored and a GCS bucket will be created with the name var.project_id-cdn
   EOT
 }
@@ -69,7 +69,7 @@ variable "s3_origin_bucket_secrets" {
   }
   description = <<-EOT
   AWS S3 credentials with s3:GetObject permission on objects in the S3 origin
-  bucket. If gcs_s3_compatibility is true, these values will be ignored and
+  bucket. If gcs_interoperability is true, these values will be ignored and
   instead the GCS HMAC key and secret values will be used.
   EOT
 }
@@ -90,19 +90,19 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "~> 3.51"
+      version = "~> 3.61"
     }
     google-beta = {
       source  = "hashicorp/google-beta"
-      version = "~> 3.51"
+      version = "~> 3.61"
     }
     local = {
       source  = "hashicorp/local"
-      version = "~> 2.0"
+      version = "~> 2.1"
     }
     null = {
       source  = "hashicorp/null"
-      version = "~> 3.0"
+      version = "~> 3.1"
     }
     time = {
       source = "hashicorp/time"

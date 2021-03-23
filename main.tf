@@ -69,7 +69,7 @@ resource "null_resource" "build" {
 }
 
 resource "google_storage_bucket" "gcs_origin" {
-  count = var.gcs_s3_compatibility ? 1 : 0
+  count = var.gcs_interoperability ? 1 : 0
 
   name          = "${var.project_id}-cdn"
   location      = var.region
@@ -83,22 +83,17 @@ resource "google_storage_bucket" "gcs_origin" {
 }
 
 resource "google_storage_bucket_object" "test_object" {
-  count = var.gcs_s3_compatibility ? 1 : 0
+  count = var.gcs_interoperability ? 1 : 0
 
-  name          = "test.txt"
+  name          = "image.png"
   bucket        = google_storage_bucket.gcs_origin[0].name
   cache_control = "public, max-age=86400"
-  content_type  = "text/css"
-
-  content = <<-EOT
-  Line 1
-  Line 2
-  Line 3
-  EOT
+  content_type  = "image/png"
+  source        = "${path.module}/docs/image.png"
 }
 
 resource "google_service_account" "gcs_origin" {
-  count = var.gcs_s3_compatibility ? 1 : 0
+  count = var.gcs_interoperability ? 1 : 0
 
   project      = var.project_id
   account_id   = "gcs-origin"
@@ -110,7 +105,7 @@ resource "google_service_account" "gcs_origin" {
 }
 
 resource "google_storage_hmac_key" "key" {
-  count = var.gcs_s3_compatibility ? 1 : 0
+  count = var.gcs_interoperability ? 1 : 0
 
   service_account_email = google_service_account.gcs_origin[0].email
 
@@ -128,7 +123,7 @@ resource "time_sleep" "sleep_for_hmac" {
 }
 
 resource "google_storage_bucket_iam_member" "member" {
-  count = var.gcs_s3_compatibility ? 1 : 0
+  count = var.gcs_interoperability ? 1 : 0
 
   bucket = google_storage_bucket.gcs_origin[0].name
   role   = "roles/storage.objectViewer"
@@ -137,8 +132,8 @@ resource "google_storage_bucket_iam_member" "member" {
 
 locals {
   origin_bucket_secrets = {
-    AWS_ACCESS_KEY_ID     = var.gcs_s3_compatibility ? google_storage_hmac_key.key[0].access_id : var.s3_origin_bucket_secrets.AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY = var.gcs_s3_compatibility ? google_storage_hmac_key.key[0].secret : var.s3_origin_bucket_secrets.AWS_SECRET_ACCESS_KEY
+    AWS_ACCESS_KEY_ID     = var.gcs_interoperability ? google_storage_hmac_key.key[0].access_id : var.s3_origin_bucket_secrets.AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY = var.gcs_interoperability ? google_storage_hmac_key.key[0].secret : var.s3_origin_bucket_secrets.AWS_SECRET_ACCESS_KEY
   }
 }
 
@@ -186,9 +181,9 @@ resource "google_secret_manager_secret_iam_member" "authn_proxy" {
 
 locals {
   authn_proxy_env_vars = {
-    ORIGIN_BUCKET_REGION    = var.gcs_s3_compatibility ? var.region : var.s3_origin_bucket_region
-    ORIGIN_BUCKET_NAME      = var.gcs_s3_compatibility ? google_storage_bucket.gcs_origin[0].name : var.s3_origin_bucket_name
-    ORIGIN_STORAGE_ENDPOINT = var.gcs_s3_compatibility ? "storage.googleapis.com" : var.s3_origin_storage_endpoint
+    ORIGIN_BUCKET_REGION    = var.gcs_interoperability ? var.region : var.s3_origin_bucket_region
+    ORIGIN_BUCKET_NAME      = var.gcs_interoperability ? google_storage_bucket.gcs_origin[0].name : var.s3_origin_bucket_name
+    ORIGIN_STORAGE_ENDPOINT = var.gcs_interoperability ? "storage.googleapis.com" : var.s3_origin_storage_endpoint
     AWS_ACCESS_KEY_ID       = "sm://${var.project_id}/AWS_ACCESS_KEY_ID"
     AWS_SECRET_ACCESS_KEY   = "sm://${var.project_id}/AWS_SECRET_ACCESS_KEY"
   }
@@ -282,6 +277,11 @@ resource "google_compute_backend_service" "authn_proxy_be" {
     client_ttl        = 86400
     max_ttl           = 86400
     serve_while_stale = 86400
+  }
+
+  log_config {
+    enable      = true
+    sample_rate = 1.0
   }
 
   backend {

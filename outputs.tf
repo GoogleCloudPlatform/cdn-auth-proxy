@@ -33,5 +33,5 @@ output "cdn_public_ip" {
 }
 
 output "gcs_origin" {
-  value = var.gcs_s3_compatibility ? google_storage_bucket.gcs_origin[0].url : null
+  value = var.gcs_interoperability ? google_storage_bucket.gcs_origin[0].url : null
 }
