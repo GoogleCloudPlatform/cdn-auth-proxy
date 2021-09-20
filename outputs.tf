@@ -35,3 +35,7 @@ output "cdn_public_ip" {
 output "gcs_origin" {
   value = var.gcs_interoperability ? google_storage_bucket.gcs_origin[0].url : null
 }
+
+output "forwarding_rule_name" {
+  value = google_compute_global_forwarding_rule.authn_proxy[0].name
+}

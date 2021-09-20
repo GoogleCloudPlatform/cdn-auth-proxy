@@ -1,25 +1,16 @@
 # Deploying a Cloud CDN with an AWS S3 Authentication Proxy
 
-To run this code either Click [HERE][1] If you'd like to open a Cloud Shell and
-have this repo cloned and walk you through this tutorial.
+This is the repo for the [Deploying a Cloud CDN origin authentication proxy][1]
+tutorial.
 
-If you've already cloned the repo into the Cloud Shell environment, you can
-launch the tutorial by running the following command in the Cloud Shell
-terminal.
-
-```bash
-cloudshell tutorial docs/tutorial.md
-```
-
-## Learn More
-
-Want to lean more about the products used here? Check out these useful links:
-
-* [Cloud CDN][2]
-* [Cloud Run][3]
+This tutorial explains how to deploy a [Cloud CDN][2] with a private [Amazon
+Simple Storage Service (S3)][3] origin bucket. The deployment uses [Cloud
+Run][4] and an authentication proxy to sign CDN cache fill requests and forward
+them to the Amazon S3 origin bucket.
 
 **This is not an officially supported Google product.**
 
-[1]: https://console.cloud.google.com/cloudshell/open?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/cdn-auth-proxy.git&cloudshell_git_branch=main&cloudshell_workspace=docs/..&tutorial=docs/tutorial.md
+[1]: https://cloud.google.com/architecture/deploying-a-cloud-cdn-origin-authentication-proxy
 [2]: https://cloud.google.com/cdn
-[3]: https://cloud.google.com/run
+[3]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingBucket.html
+[4]: https://cloud.google.com/run

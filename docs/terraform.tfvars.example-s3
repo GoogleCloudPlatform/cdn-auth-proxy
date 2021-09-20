@@ -1,4 +1,4 @@
-project_id                 = "PROJECT_ID
+project_id                 = "PROJECT_ID"
 region                     = "REGION"
 
 s3_origin_bucket_name      = "S3_ORIGIN_BUCKET_NAME"
