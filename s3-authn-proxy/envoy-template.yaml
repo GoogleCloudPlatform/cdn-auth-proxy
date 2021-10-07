@@ -49,24 +49,31 @@ static_resources:
                           route:
                             cluster: origin|443
                 http_filters:
-                  - name: envoy.filters.http.aws_request_signing
-                    typed_config:
-                      "@type": type.googleapis.com/envoy.extensions.filters.http.aws_request_signing.v3.AwsRequestSigning
-                      service_name: s3
-                      region: "$ORIGIN_BUCKET_REGION"
-                      host_rewrite: "$ORIGIN_BUCKET_NAME.$ORIGIN_STORAGE_ENDPOINT"
                   - name: envoy.filters.http.lua
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
                       inline_code: |
+                        -- Called on request path.
+                        function envoy_on_request(request_handle)
+                          local headers = request_handle:headers()
+                          local path = headers:get(':path')
+                          -- strip all query parameters from request
+                          local pos = string.find(path, '?')
+                          if pos then
+                            path = string.sub(path, 1, pos-1)
+                            headers:replace(':path', path)
+                            request_handle:logDebug('Stripped query parms from path: '..path)
+                          end
+                        end
+
                         -- Called on response path.
                         function envoy_on_response(response_handle)
                           -- Remove headers with these prefixes
-                          local header_remove_prefixes = { "x-goog", "x-envoy", "x-amz", "x-aws", "x-guploader-uploadid" }
+                          local header_remove_prefixes = { 'x-goog', 'x-envoy', 'x-amz', 'x-aws', 'x-guploader-uploadid' }
                           local headers = response_handle:headers()
                           local remove_headers = {}
-                          for k,v in pairs(headers) do
-                            for i,pfx in ipairs(header_remove_prefixes) do
+                          for k, v in pairs(headers) do
+                            for i, pfx in ipairs(header_remove_prefixes) do
                               match = k:sub(1, #pfx) == pfx
                               if match then
                                 table.insert(remove_headers, k)
@@ -74,13 +81,20 @@ static_resources:
                               end
                             end
                           end
-                          for k,v in ipairs(remove_headers) do
+                          for k, v in ipairs(remove_headers) do
                             -- Always keep object custom user metadata headers
-                            if k ~= "x-aws-meta" and k ~= "x-goog-meta" then
+                            if k ~= 'x-aws-meta' and k ~= 'x-goog-meta' then
+                              response_handle:logDebug('Removed response header:'..v)
                               headers:remove(v)
                             end
                           end
                         end
+                  - name: envoy.filters.http.aws_request_signing
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.aws_request_signing.v3.AwsRequestSigning
+                      service_name: s3
+                      region: "$ORIGIN_BUCKET_REGION"
+                      host_rewrite: "$ORIGIN_BUCKET_NAME.$ORIGIN_STORAGE_ENDPOINT"
                   - name: envoy.filters.http.router
 
   clusters:
